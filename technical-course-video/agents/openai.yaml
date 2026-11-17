@@ -1,0 +1,4 @@
+interface:
+  display_name: "三维技术微课制作"
+  short_description: "按分镜制作技术微课，同步三维动作、旁白、字幕和章节标题"
+  default_prompt: "用 $technical-course-video 根据我的讲稿和素材制作技术微课，并交付核验过的 MP4。"

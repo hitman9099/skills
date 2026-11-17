@@ -1,0 +1,24 @@
+{
+  "canvas": [2560, 1440],
+  "fps": "30",
+  "font": "Microsoft YaHei",
+  "chapter_corner": "left",
+  "shots": [
+    {
+      "id": "S01",
+      "frames": 120,
+      "video": "renders/S01.mp4",
+      "narration": "audio/S01.wav",
+      "chapter": "01 结构识别",
+      "captions": [{"start": 0.3, "end": 3.6, "text": "观察固定机架和可动舵面。"}]
+    },
+    {
+      "id": "S02",
+      "frames": 180,
+      "video": "renders/S02.mp4",
+      "narration": "audio/S02.wav",
+      "chapter": "02 工作原理",
+      "captions": [{"start": 0.4, "end": 4.8, "text": "舵面绕固定的横向轴转动。"}]
+    }
+  ]
+}
