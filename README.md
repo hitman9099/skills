@@ -2,9 +2,11 @@
 
 用于在不同电脑、不同智能体之间复用的技能。
 
-| 技能 | 用途 | 入口 |
-| --- | --- | --- |
-| `technical-course-video` | 制作或修订技术微课与三维教学视频，按旁白组织动作、字幕和章节，再合片核验。 | [安装与使用](technical-course-video/README.md) · [SKILL.md](technical-course-video/SKILL.md) |
+## 三维技术微课制作
+
+`technical-course-video` 可以根据讲稿、参考图和旁白制作工程原理微课，也可以按时间段修订已有成片。它指导智能体拆分镜、制作关键动作样片、按旁白安排动画和标注、对齐中文字幕、加入章节标题，并输出经过帧数、时长和音轨检查的 MP4。
+
+随包合片脚本使用 **Python 3.9+ 和 FFmpeg**。新制三维镜头用 **Blender**。静态参考图可选 **ComfyUI**，新配音可选 **IndexTTS2**，字幕时间定位可选 **Whisper**。已有视频和录音可以直接用于后期处理。具体依赖及示例见 [技能说明](technical-course-video/README.md) 和 [SKILL.md](technical-course-video/SKILL.md)。
 
 ## 给智能体的安装提示词
 
