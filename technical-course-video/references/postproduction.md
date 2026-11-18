@@ -1,27 +1,30 @@
-# 旁白、合片和核验
+# 旁白、合片与验收
 
-- 已有正确录音就直接用。只有短参考音时，用授权的音色参考生成新台词。先生成一段检查音色、专业词和语速。本地 IndexTTS2 是用过的选项，新环境可用合适的工具或真人录音。
-- 用实际发音时间对齐字幕。可用本地 ASR 词级时间定位，以确认过的中文原稿显示，复听术语、声调和断句。拼音匹配只支持发音完整性判断，同音、声调和静音转写异常要复听。替换一句时复用其他原音。
-- 优先统一响度及峰值，用 48 kHz 单声道 PCM16 WAV 交接。短于镜长的旁白可补静音。过长先改镜长或小幅调整语速，再对齐字幕。用整片累计时间换算采样边界，避免逐镜舍入积累漂移。
+## 旁白和专业词
 
-## 随包脚本
+- 已有正确录音就复用。需要新台词时可用授权音色或真人录音。先试一段确认音色、专业词、语速和响度。本地 IndexTTS2 和 Whisper 分别可用于生成与定位，按当前环境选择。
+- 用 ASR 的词级时间定位发音，以审定原稿显示字幕。ASR 正字不证明声调正确。遇到多音字，可在合成输入使用读音明确的同音字，字幕仍用正确字形。复听完整词和断句。清晰的有声段可用基频轮廓辅助检查，注意不要把邻字或未发声段算进去。
+- 单词返修时先找实际音节边界，尽量只裁换目标词。匹配响度，轻微调整时长，在低能量交界点用短交叉淡化。合成后复听拼口，用 PCM 比对替换范围之外的样本。整句必须重录时才扩大范围。
+- 以整片累计帧号换算采样边界，避免逐镜舍入积累漂移。交接可用 48 kHz 单声道 PCM16 WAV。短于镜长时补静音，过长时先确定镜长或小幅调整语速。
 
-运行主机需要 Python 3.9+ 和带 `libx264`、`libass` 的 FFmpeg。脚本只使用 Python 标准库。用系统识别的 Python 启动命令，如 Windows 的 `py -3` 或 macOS/Linux 的 `python3`。FFmpeg 在 PATH 时可省略 `--ffmpeg`，便携版传入可执行文件的完整路径。
+## 随包合片脚本
+
+运行主机需要 Python 3.9+ 和带 `libx264`、`libass` 的 FFmpeg。该脚本只用 Python 标准库。使用本机的 Python 启动命令，例如 Windows 的 `py -3` 或 macOS/Linux 的 `python3`。FFmpeg 在 PATH 时可省略 `--ffmpeg`。
 
 ```text
-python3 /path/to/technical-course-video/scripts/course_video.py --ffmpeg /path/to/ffmpeg doctor
-python3 /path/to/technical-course-video/scripts/course_video.py --ffmpeg /path/to/ffmpeg build /path/to/project/course.json /path/to/project/final.mp4
+python3 scripts/course_video.py --ffmpeg /path/to/ffmpeg doctor
+python3 scripts/course_video.py --ffmpeg /path/to/ffmpeg build /path/to/project/course.json /path/to/project/final.mp4
 ```
 
-复制 [course.json](../assets/course.json) 并填写。素材路径相对于清单，也可用绝对路径。设置 `canvas`、`fps`（如 `30` 或 `30000/1001`）、`font`（本机中文字体族名）、可选 `font_dir`（额外字体目录）、`chapter_corner`（`left` 或 `right`）。每镜含 `id`、`frames`、`video`、`chapter`、`narration`、`captions`：
+复制 [course.json](../assets/course.json) 并填写。素材路径相对于清单，也可用绝对路径。设置 `canvas`、`fps`（如 `30` 或 `30000/1001`）、`font`（中文字体族名）、可选 `font_dir` 和 `chapter_corner`（`left` 或 `right`）。每镜含 `id`、`frames`、`video`、`chapter`、`narration`、`captions`。
 
-- `video` 用已渲好的视频。静图加 `still: true`。默认从第一帧开始，`start_frame` 是帧率统一后的源画面入点。源画面不足会报错，源更长会按 `frames` 截取。比例不同时等比缩放、留边。转帧不使用光流。
-- `narration` 指向该镜 48 kHz 单声道 PCM16 WAV，省略可做无旁白镜头。音频短了在尾部补静音，长了报错。`captions` 每项填本镜内的秒数 `start`、`end` 和 `text`。字幕不重叠、不越镜。
-- 同一章重复填写相同 `chapter`，标题在整镜持续显示。源画面已有字幕或标题时省略对应字段。公式、对象标注、翼面高亮、流场动画在交给脚本前完成。
-- 脚本自动检查整片可解码、尺寸、帧数、连续时间戳和 AAC 解码样本量。还需看成品抽帧、听关键句，确认字体有字、标题不遮挡且音画对应。
+- `video` 指向已渲染画面。静图加 `still: true`。`start_frame` 是统一帧率后的入点。源画面不足会报错，更长的按 `frames` 截取。比例不同时等比缩放、留边。用固定帧率转换处理入点。
+- `narration` 指向对应镜的 48 kHz 单声道 PCM16 WAV，可省略为静音。短音频在尾部补静音，长音频会报错。`captions` 用镜内秒数填 `start`、`end` 和 `text`，字幕应错开，并落在镜头时长内。
+- 同一章重复填相同 `chapter`。源画面已烧录的字幕或标题省略对应字段。公式、对象标注和流场动画在交给脚本前制作。脚本检查尺寸、帧数、逐帧时间戳与 AAC 解码样本量。交付前另做目视和听觉检查。
 
-## 其他剪辑管线
+## 保持时间轴的局部替换
 
-先统一尺寸、色彩、帧率和时基。烧字幕前试一镜中文和公式。拼接已编码片段时用仅视频的中间片段，WAV 按顺序拼为一条音轨后一次编码 AAC。时间轴不变时可直接复制完整原音轨。通过实际解码核对首尾帧和时间戳；容器的平均帧率数值不足以排除最后一帧丢失。
-
-交付前看章首章尾、字幕进出、受力和流向及用户指出的时间点。成片链接附实际规格。有升采样、转帧、教学近似或指定音色的重新合成时，清楚说明范围。
+1. 用可独立解码、仅视频的片段作为替换单元。新片段与原片段对齐帧长、画幅、帧率、时基、编码参数和色彩标记。用合成结果验证全程色彩范围一致，避免片段拼接后黑位变化。
+2. 条件兼容时，用 FFmpeg concat demuxer 按时间轴拼视频，流复制复用片段。时间轴不变且只改画面时，从当前已验收成片流复制完整音轨，用 `-map` 显式选择视频与音频。若修过声音，先合一条连续 PCM，再一次编码 AAC。
+3. 用实际解码逐帧对照时间戳和帧数。容器显示的平均帧率不能排除少帧。流复制后可比对音频包和未改区间的视频包。若容器封装改变视频包表示，用解码后的帧作比对。帧长有变化时重核切点和声音对齐。
+4. 要求原生 4K 时核对源渲染像素，例如 UHD 3840×2160，还要检查最终封装尺寸。输出升采样和帧率转换按实际范围说明。用交付文件抽查用户指出的位置、各章起止、中文渲染和关键发音，以带时间点的修订前后帧帮助验收。
